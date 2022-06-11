@@ -5,10 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.WindowInsets
-import android.view.WindowManager
+import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
@@ -62,10 +59,35 @@ class MainActivity : AppCompatActivity() {
         binding.button2.setOnClickListener { goToLongSleeve() }
         binding.button3.setOnClickListener { goToShirt() }
         binding.button4.setOnClickListener { goToSweatShirt() }
-        binding.refresh.setOnClickListener { refresh() }
+        binding.refresh.setOnClickListener { getAllData() }
+        binding.imgNext.setOnClickListener { nextIndex()}
+        binding.imgPrev.setOnClickListener { prevIndex()}
+        binding.tvIndex.text = index.toString()
+    }
+
+    private fun prevIndex() {
+        Log.i("current index", index.toString())
+        if (index > 1) {
+            index = index - 1
+            binding.tvIndex.text = index.toString()
+            getIndexBarang(index)
+        }
+        Log.i("now index", index.toString())
+
+    }
+
+    private fun nextIndex() {
+        Log.i("current index", index.toString())
+        if (index < maxIndex) {
+            index = index + 1
+            binding.tvIndex.text = index.toString()
+            getIndexBarang(index)
+        }
+        Log.i("now index", index.toString())
     }
 
     private fun getAllData() {
+        binding.progressBar.setVisibility(View.VISIBLE)
         val service = ApiConfig().getApiService().getProductItem("",0, 0,"")
         service.enqueue(object : Callback<ListItemBarang> {
             override fun onResponse(
@@ -75,22 +97,28 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val responseBody = response.body()
                     if (responseBody != null) {
+                        binding.progressBar.setVisibility(View.GONE)
                         Log.i("data ini", responseBody.toString())
                         maxIndex = Math.ceil((responseBody.values?.size!!.toDouble() / 5)).roundToInt()
                         getIndexBarang(1)
+                        index = 1
+                        binding.tvIndex.text = index.toString()
                     }
                 } else {
                     Log.i("data ini", "error 1")
+                    binding.progressBar.setVisibility(View.GONE)
                 }
             }
 
             override fun onFailure(call: Call<ListItemBarang>, t: Throwable) {
                 Log.i("data ini", "error 2")
+                binding.progressBar.setVisibility(View.GONE)
             }
         })
     }
 
     private fun getIndexBarang(indeksPage:Int) {
+        binding.progressBar.setVisibility(View.VISIBLE)
         val service = ApiConfig().getApiService().getProductItem("",indeksPage, 5,"")
         service.enqueue(object : Callback<ListItemBarang> {
             override fun onResponse(
@@ -100,17 +128,20 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val responseBody = response.body()
                     if (responseBody != null) {
+                        binding.progressBar.setVisibility(View.GONE)
                         Log.i("data ini", responseBody.toString())
                         arrayList = responseBody.values as ArrayList<ValuesItem>
                         Log.i("dataaaa woe", arrayList.toString())
                         showRecyclerList()
                     }
                 } else {
+                    binding.progressBar.setVisibility(View.GONE)
                     Log.i("data ini", "error 1")
                 }
             }
 
             override fun onFailure(call: Call<ListItemBarang>, t: Throwable) {
+                binding.progressBar.setVisibility(View.GONE)
                 Log.i("data ini", "error 2")
             }
         })
