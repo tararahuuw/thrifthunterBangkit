@@ -4,10 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -15,8 +17,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.squareup.picasso.Picasso
 import com.thrifthunter.R
-import com.thrifthunter.tools.ViewModelFactory
 import com.thrifthunter.activity.categoryHoodie.HoodieCategoryActivity
 import com.thrifthunter.activity.categoryLongSleeve.LongSleeveCategoryActivity
 import com.thrifthunter.activity.categoryShirt.ShirtCategoryActivity
@@ -26,8 +28,13 @@ import com.thrifthunter.activity.profile.ProfileActivity
 import com.thrifthunter.auth.LoginActivity
 import com.thrifthunter.databinding.ActivityMainBinding
 import com.thrifthunter.paging.LoadingStateAdapter
-import com.thrifthunter.tools.ListUserAdapter
-import com.thrifthunter.tools.UserPreference
+import com.thrifthunter.tools.*
+import com.thrifthunter.tools.response.ListItemBarang
+import com.thrifthunter.tools.response.ValuesItem
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import kotlin.math.roundToInt
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -35,6 +42,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mainViewModel: MainViewModel
+    private var index : Int = 1
+    private var maxIndex : Int = 1
+    private var arrayList = ArrayList<ValuesItem>()
 //    private var listItems: ArrayList<ProductData> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +54,8 @@ class MainActivity : AppCompatActivity() {
 
         setView()
         setViewModel()
+        index = 1;
+        getAllData()
 //        searchUser()
 
         binding.button1.setOnClickListener { goToHoodie() }
@@ -51,6 +63,63 @@ class MainActivity : AppCompatActivity() {
         binding.button3.setOnClickListener { goToShirt() }
         binding.button4.setOnClickListener { goToSweatShirt() }
         binding.refresh.setOnClickListener { refresh() }
+    }
+
+    private fun getAllData() {
+        val service = ApiConfig().getApiService().getProductItem("",0, 0,"")
+        service.enqueue(object : Callback<ListItemBarang> {
+            override fun onResponse(
+                call: Call<ListItemBarang>,
+                response: Response<ListItemBarang>
+            ) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    if (responseBody != null) {
+                        Log.i("data ini", responseBody.toString())
+                        maxIndex = Math.ceil((responseBody.values?.size!!.toDouble() / 5)).roundToInt()
+                        getIndexBarang(1)
+                    }
+                } else {
+                    Log.i("data ini", "error 1")
+                }
+            }
+
+            override fun onFailure(call: Call<ListItemBarang>, t: Throwable) {
+                Log.i("data ini", "error 2")
+            }
+        })
+    }
+
+    private fun getIndexBarang(indeksPage:Int) {
+        val service = ApiConfig().getApiService().getProductItem("",indeksPage, 5,"")
+        service.enqueue(object : Callback<ListItemBarang> {
+            override fun onResponse(
+                call: Call<ListItemBarang>,
+                response: Response<ListItemBarang>
+            ) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    if (responseBody != null) {
+                        Log.i("data ini", responseBody.toString())
+                        arrayList = responseBody.values as ArrayList<ValuesItem>
+                        Log.i("dataaaa woe", arrayList.toString())
+                        showRecyclerList()
+                    }
+                } else {
+                    Log.i("data ini", "error 1")
+                }
+            }
+
+            override fun onFailure(call: Call<ListItemBarang>, t: Throwable) {
+                Log.i("data ini", "error 2")
+            }
+        })
+    }
+
+    private fun showRecyclerList() {
+        binding.recycleView.layoutManager = LinearLayoutManager(this)
+        val listItemAdapter = ListBarangAdapter(arrayList)
+        binding.recycleView.adapter = listItemAdapter
     }
 
 //    private fun searchUser() { search.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
