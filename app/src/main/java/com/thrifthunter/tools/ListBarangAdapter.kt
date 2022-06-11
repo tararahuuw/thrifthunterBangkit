@@ -32,6 +32,7 @@ class ListBarangAdapter(private val listBarang: ArrayList<ValuesItem>) : Recycle
 
         fun bind(barangModel: ValuesItem) {
             Picasso.get().load("https://picsum.photos/500").into(photoPost);
+//            Picasso.get().load(barangModel.photoUrl).into(photoPost);
             namePost.text = barangModel.name
             descPost.text = barangModel.description
 
