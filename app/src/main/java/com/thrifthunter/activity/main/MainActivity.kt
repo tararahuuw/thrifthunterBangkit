@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
@@ -28,6 +29,7 @@ import com.thrifthunter.paging.LoadingStateAdapter
 import com.thrifthunter.tools.*
 import com.thrifthunter.tools.response.ListItemBarang
 import com.thrifthunter.tools.response.ValuesItem
+import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -52,8 +54,8 @@ class MainActivity : AppCompatActivity() {
         setView()
         setViewModel()
         index = 1;
+        searchBarang()
         getAllData()
-//        searchUser()
 
         binding.button1.setOnClickListener { goToHoodie() }
         binding.button2.setOnClickListener { goToLongSleeve() }
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         if (index > 1) {
             index = index - 1
             binding.tvIndex.text = index.toString()
-            getIndexBarang(index)
+            getIndexBarang(index, "")
         }
         Log.i("now index", index.toString())
 
@@ -81,14 +83,14 @@ class MainActivity : AppCompatActivity() {
         if (index < maxIndex) {
             index = index + 1
             binding.tvIndex.text = index.toString()
-            getIndexBarang(index)
+            getIndexBarang(index, "")
         }
         Log.i("now index", index.toString())
     }
 
     private fun getAllData() {
         binding.progressBar.setVisibility(View.VISIBLE)
-        val service = ApiConfig().getApiService().getProductItem("",0, 0,"")
+        val service = ApiConfig().getApiService().getProductItem("",0, 0)
         service.enqueue(object : Callback<ListItemBarang> {
             override fun onResponse(
                 call: Call<ListItemBarang>,
@@ -100,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                         binding.progressBar.setVisibility(View.GONE)
                         Log.i("data ini", responseBody.toString())
                         maxIndex = Math.ceil((responseBody.values?.size!!.toDouble() / 5)).roundToInt()
-                        getIndexBarang(1)
+                        getIndexBarang(1, "")
                         index = 1
                         binding.tvIndex.text = index.toString()
                     }
@@ -117,9 +119,9 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getIndexBarang(indeksPage:Int) {
+    private fun getIndexBarang(indeksPage:Int, name : String) {
         binding.progressBar.setVisibility(View.VISIBLE)
-        val service = ApiConfig().getApiService().getProductItem("",indeksPage, 5,"")
+        val service = ApiConfig().getApiService().getProductItem(name,indeksPage, 5)
         service.enqueue(object : Callback<ListItemBarang> {
             override fun onResponse(
                 call: Call<ListItemBarang>,
@@ -130,8 +132,10 @@ class MainActivity : AppCompatActivity() {
                     if (responseBody != null) {
                         binding.progressBar.setVisibility(View.GONE)
                         Log.i("data ini", responseBody.toString())
+                        arrayList = ArrayList<ValuesItem>()
                         arrayList = responseBody.values as ArrayList<ValuesItem>
                         Log.i("dataaaa woe", arrayList.toString())
+                        Log.i("jumlah data", arrayList.size.toString())
                         showRecyclerList()
                     }
                 } else {
@@ -153,24 +157,23 @@ class MainActivity : AppCompatActivity() {
         binding.recycleView.adapter = listItemAdapter
     }
 
-//    private fun searchUser() { search.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-//        override fun onQueryTextSubmit(query: String): Boolean {
-//            if (query.isEmpty()) {
-//                return true
-//            } else {
-//                listItems.clear()
-//                findData(query)
-//            }
-//            return true
-//        }
-//
-//        override fun onQueryTextChange(newText: String): Boolean {
-//            listItems.clear()
-//            binding.recycleView.adapter = ListUserAdapter(listItems)
-//            return false
-//        }
-//    })
-//    }
+    private fun searchBarang() {
+        val searchView : SearchView = findViewById(R.id.searchView)
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                getIndexBarang(1, query)
+                binding.tvIndex.text = "1"
+                searchView.clearFocus()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                getIndexBarang(1, newText)
+                binding.tvIndex.text = "1"
+                return false
+            }
+        })
+    }
 
     private fun setView() {
         @Suppress("DEPRECATION")

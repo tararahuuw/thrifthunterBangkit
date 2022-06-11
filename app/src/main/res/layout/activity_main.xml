@@ -49,19 +49,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search"
+<!--        <androidx.appcompat.widget.SearchView-->
+<!--            android:id="@+id/search"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/layout_bg_search"-->
+<!--            android:textCursorDrawable="@null"-->
+<!--            app:iconifiedByDefault="false"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:queryBackground="@null"-->
+<!--            app:queryHint="@string/searchbar"-->
+<!--            app:showDividers="end" />-->
+
+        <SearchView
+            android:id="@+id/searchView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:background="@drawable/layout_bg_search"
-            android:textCursorDrawable="@null"
-            app:iconifiedByDefault="false"
+            android:iconifiedByDefault="false"
+            android:queryHint="Search Here"
+            android:queryBackground="@null"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:queryBackground="@null"
-            app:queryHint="@string/searchbar"
-            app:showDividers="end" />
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
